@@ -1,0 +1,98 @@
+name: MLola Prove
+description: Prove a pull request does what its approved change request says, and post the proof.
+author: MLola
+branding:
+  icon: check-circle
+  color: green
+
+inputs:
+  contracts:
+    description: The contracts to prove (a glob, or several separated by spaces).
+    default: contracts/*.json
+  base-url:
+    description: Where the API and browser checks run, e.g. http://localhost:3000. Default, the contract's baseUrl.
+    default: ""
+  base:
+    description: The branch to compare with. Default, the pull request's base branch.
+    default: ""
+  approved:
+    description: Contract digests approved elsewhere (a change-request system), separated by commas.
+    default: ""
+  baseline-dir:
+    description: A directory of proofs made on the base branch (<name>/proof.json), to show before and after.
+    default: ""
+  storage-state:
+    description: A browser storage state file, to start browser checks signed in.
+    default: ""
+  require-auto-merge:
+    description: Fail unless every contract is proven with nothing left for a person.
+    default: "false"
+  comment:
+    description: Post the proof as one comment on the pull request, and update it on each run. Needs pull-requests write permission.
+    default: "true"
+  upload:
+    description: Keep the proofs and their screenshots as a workflow artifact.
+    default: "true"
+  artifact-name:
+    description: The name of that artifact.
+    default: mlola-proof
+  out:
+    description: Where the proofs are written.
+    default: proof
+  version:
+    description: The @mlola/browser-cli version.
+    default: "0.15.1"
+  github-token:
+    description: The token used to post the comment.
+    default: ${{ github.token }}
+
+outputs:
+  verdict:
+    description: proven, not-proven or not-proven-yet, the worst over all contracts.
+    value: ${{ steps.prove.outputs.verdict }}
+  auto-merge:
+    description: true when every contract is proven with nothing left for a person.
+    value: ${{ steps.prove.outputs.auto-merge }}
+  proof-dir:
+    description: Where the proofs were written.
+    value: ${{ steps.prove.outputs.proof-dir }}
+
+runs:
+  using: composite
+  steps:
+    - name: Prove
+      id: prove
+      shell: bash
+      # Inputs reach the script as environment variables, never as script text.
+      env:
+        MLOLA_CONTRACTS: ${{ inputs.contracts }}
+        MLOLA_BASE_URL: ${{ inputs.base-url }}
+        MLOLA_BASE: ${{ inputs.base }}
+        MLOLA_PR_BASE: ${{ github.base_ref }}
+        MLOLA_APPROVED: ${{ inputs.approved }}
+        MLOLA_BASELINE_DIR: ${{ inputs.baseline-dir }}
+        MLOLA_STORAGE_STATE: ${{ inputs.storage-state }}
+        MLOLA_REQUIRE_AUTO_MERGE: ${{ inputs.require-auto-merge }}
+        MLOLA_OUT: ${{ inputs.out }}
+        MLOLA_CLI_VERSION: ${{ inputs.version }}
+      run: bash "$GITHUB_ACTION_PATH/prove.sh"
+
+    - name: Comment on the pull request
+      if: always() && inputs.comment == 'true' && github.event.pull_request.number
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        MLOLA_PR: ${{ github.event.pull_request.number }}
+        MLOLA_REPO: ${{ github.repository }}
+        MLOLA_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        MLOLA_COMMENT_FILE: ${{ steps.prove.outputs.comment-file }}
+        MLOLA_ARTIFACT: ${{ inputs.artifact-name }}
+      run: bash "$GITHUB_ACTION_PATH/comment.sh"
+
+    - name: Keep the proofs
+      if: always() && inputs.upload == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ inputs.out }}
+        if-no-files-found: ignore

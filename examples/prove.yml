@@ -1,0 +1,27 @@
+# .github/workflows/prove.yml
+name: prove
+on: [pull_request]
+
+permissions:
+  contents: read
+  pull-requests: write      # for the proof comment
+
+jobs:
+  prove:
+    runs-on: ubuntu-latest  # Google Chrome is preinstalled
+    env:
+      MLOLA_RECEIPT_KEY: ${{ secrets.MLOLA_RECEIPT_KEY }}   # optional: signs the proof
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }                            # the base branch, to compare with
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm ci
+      - run: npm test -- --reporter=junit --outputFile=reports/junit.xml   # your tests, as JUnit
+      - name: Start the app
+        run: |
+          npm run start &
+          npx -y wait-on@8 http://localhost:3000
+      - uses: mlolahq/prove-action@v1
+        with:
+          base-url: http://localhost:3000
