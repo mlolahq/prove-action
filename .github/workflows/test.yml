@@ -1,0 +1,43 @@
+name: test
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: shellcheck prove.sh comment.sh
+
+  prove:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Start the test app
+        run: |
+          node test/app/server.mjs &
+          npx -y wait-on@8 http://127.0.0.1:4330/api/health
+      - name: Prove the test contract with this action
+        id: prove
+        uses: ./
+        with:
+          contracts: test/contracts/*.json
+      - name: The verdict is proven, with UAT left for a person
+        env:
+          VERDICT: ${{ steps.prove.outputs.verdict }}
+          AUTO_MERGE: ${{ steps.prove.outputs.auto-merge }}
+          PROOF_DIR: ${{ steps.prove.outputs.proof-dir }}
+        run: |
+          test "$VERDICT" = proven
+          test "$AUTO_MERGE" = false
+          test -f "$PROOF_DIR/CR-1/proof.json"
+          test -f "$PROOF_DIR/CR-1/AC-2.png"
