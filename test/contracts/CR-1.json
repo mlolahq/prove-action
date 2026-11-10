@@ -1,0 +1,43 @@
+{
+  "format": "mlola.contract/1",
+  "id": "CR-1",
+  "title": "A visitor is greeted by name",
+  "version": 1,
+  "approvedBy": ["maintainer"],
+  "risk": "low",
+  "baseUrl": "http://127.0.0.1:4330",
+  "acceptance": [
+    {
+      "id": "AC-1",
+      "text": "The name is trimmed, and an empty one is asked for",
+      "proof": {
+        "layer": "test",
+        "report": "../reports/junit.xml",
+        "cases": ["greeting > trims the name", "greeting > asks for a name when it is empty"],
+        "files": ["../greeting.test.mjs"]
+      }
+    },
+    {
+      "id": "AC-2",
+      "text": "Entering a name and pressing the button greets the visitor",
+      "proof": {
+        "layer": "browser",
+        "url": "/",
+        "steps": [{ "fill": "Your name", "with": "Ada" }, { "click": "Say hello" }],
+        "expect": { "kind": "text_visible", "text": "Hello, Ada!" }
+      }
+    },
+    {
+      "id": "AC-3",
+      "text": "The greeting's tone fits the brand",
+      "proof": { "layer": "manual", "how": "a maintainer reads the AC-2 screenshot" }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "INV-1",
+      "text": "The service reports healthy",
+      "proof": { "layer": "api", "get": "/api/health", "status": 200, "bodyContains": "\"ok\":true" }
+    }
+  ]
+}
