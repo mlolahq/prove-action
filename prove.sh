@@ -64,7 +64,7 @@ for contract in "${files[@]}"; do
     *)
       worst=2
       # shellcheck disable=SC2016  # the backticks are Markdown
-      printf '### %s\n\n`mlola browser prove` could not run this contract (exit %s). See the job log.\n\n' "$name" "$status" >>"$comment_file"
+      printf '### %s\n\n`mlola prove` could not run this contract (exit %s). See the job log.\n\n' "$name" "$status" >>"$comment_file"
       ;;
   esac
   if ! grep -Eq '"autoMerge": *true' "$out/$name/proof.json" 2>/dev/null; then auto_merge=false; fi
