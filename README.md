@@ -1,4 +1,4 @@
-# MLola Prove
+# Mlola Prove
 
 **Review the intent. Prove the result.**
 
