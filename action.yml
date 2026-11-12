@@ -1,6 +1,6 @@
-name: MLola Prove
+name: Mlola Prove
 description: Prove a pull request does what its approved change request says, and post the proof.
-author: MLola
+author: Mlola
 branding:
   icon: check-circle
   color: green

@@ -1,4 +1,4 @@
-# MLola Prove
+# Mlola Prove
 
 **Review the intent. Prove the result.**
 
@@ -8,7 +8,7 @@ real browser, without a model. The result is a proof on the pull request: the
 verdict for each criterion with its evidence, and the short list of things a
 person still has to look at.
 
-It runs [`mlola browser prove`](https://mlola.com/browser-runtime/docs/prove-a-change)
+It runs [`mlola prove`](https://mlola.com/prove/docs/prove-a-change)
 for every contract in the repository.
 
 ```yaml
@@ -21,7 +21,7 @@ for every contract in the repository.
 
 1. **A contract** for the change, in `contracts/`. A contract is the change
    request written so a machine can check it:
-   [how to write one](https://mlola.com/browser-runtime/docs/prove-a-change#contract).
+   [how to write one](https://mlola.com/prove/docs/prove-a-change#contract).
 2. **Your tests as a JUnit report**, written before this step. Most runners
    can do it: Vitest `--reporter=junit`, Jest `jest-junit`, pytest
    `--junitxml`, Node `--test-reporter=junit`, Go `gotestsum --junitfile`.
@@ -112,12 +112,12 @@ To merge by itself when nothing is left for a person:
 
 Without a key, a proof is sealed by a digest: it shows the proof was not
 changed, not who made it. To sign it, create a key once
-(`npx -p @mlola/browser-cli mlola browser receipt keygen`), store the private
+(`npx -p @mlola/browser-cli mlola receipt keygen`), store the private
 key as the secret `MLOLA_RECEIPT_KEY`, and set it in the job's `env` as above.
 Anyone can then check a proof offline against the public key:
 
 ```bash
-mlola browser receipt check proof/CR-123/proof.json --contract contracts/CR-123.json --trust ed25519:3f…
+mlola receipt check proof/CR-123/proof.json --contract contracts/CR-123.json --trust ed25519:3f…
 ```
 
 ## Things to know
@@ -125,7 +125,7 @@ mlola browser receipt check proof/CR-123/proof.json --contract contracts/CR-123.
 - **The contract is what a person reviews.** A contract that is new or changed
   in the pull request is listed for its approver, and auto-merge stays off. A
   `CODEOWNERS` entry for `contracts/` sends it to the right person.
-- **A contract a model drafted is held.** `mlola browser contract draft`
+- **A contract a model drafted is held.** `mlola contract draft`
   writes a first contract from a change request. Until a person approves it
   (it is merged to the base branch, or its digest is in `approved`), its API
   and browser checks do not run, and the verdict is `not-proven-yet`.
