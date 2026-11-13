@@ -41,7 +41,7 @@ inputs:
     default: proof
   version:
     description: The @mlola/browser-cli version.
-    default: "0.16.1"
+    default: "0.18.0"
   github-token:
     description: The token used to post the comment.
     default: ${{ github.token }}
