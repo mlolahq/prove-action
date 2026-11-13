@@ -83,7 +83,7 @@ The job then has:
 | `upload` | `true` | Keep the proofs as a workflow artifact. |
 | `artifact-name` | `mlola-proof` | The name of that artifact. |
 | `out` | `proof` | Where the proofs are written. |
-| `version` | `0.17.0` | The `@mlola/browser-cli` version, exact. |
+| `version` | `0.18.0` | The `@mlola/browser-cli` version, exact. |
 | `github-token` | the job's token | The token used to post the comment. |
 
 ## Outputs

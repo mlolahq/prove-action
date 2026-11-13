@@ -7,13 +7,13 @@ set -uo pipefail
 
 contracts=${MLOLA_CONTRACTS:-contracts/*.json}
 out=${MLOLA_OUT:-proof}
-version=${MLOLA_CLI_VERSION:-0.17.0}
+version=${MLOLA_CLI_VERSION:-0.18.0}
 tmp=${RUNNER_TEMP:-${TMPDIR:-/tmp}}
 comment_file="$tmp/mlola-prove-comment.md"
 : >"$comment_file"
 
 if ! [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]]; then
-  echo "::error::version must be an exact @mlola/browser-cli version, such as 0.17.0"
+  echo "::error::version must be an exact @mlola/browser-cli version, such as 0.18.0"
   exit 2
 fi
 
