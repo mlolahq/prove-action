@@ -4,24 +4,35 @@ on: [pull_request]
 
 permissions:
   contents: read
-  pull-requests: write      # for the proof comment
 
 jobs:
-  prove:
+  prove:                    # runs the change: no key here
     runs-on: ubuntu-latest  # Google Chrome is preinstalled
-    env:
-      MLOLA_RECEIPT_KEY: ${{ secrets.MLOLA_RECEIPT_KEY }}   # optional: signs the proof
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }                            # the base branch, to compare with
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
       - run: npm ci
-      - run: npm test -- --reporter=junit --outputFile=reports/junit.xml   # your tests, as JUnit
+      - run: npm test -- --reporter=junit --outputFile=reports/junit.xml
       - name: Start the app
         run: |
           npm run start &
           npx -y wait-on@8 http://localhost:3000
       - uses: mlolahq/prove-action@v1
+        continue-on-error: true                             # seal decides
         with:
           base-url: http://localhost:3000
+          comment: false                                    # seal posts it
+
+  seal:                     # runs none of the change's code: the key is only here
+    needs: prove
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write  # for the proof comment
+    env:
+      MLOLA_RECEIPT_KEY: ${{ secrets.MLOLA_RECEIPT_KEY }}   # optional: signs the proofs
+    steps:
+      - uses: mlolahq/prove-action/seal@v1

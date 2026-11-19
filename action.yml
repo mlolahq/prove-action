@@ -28,7 +28,7 @@ inputs:
     description: Fail unless every contract is proven with nothing left for a person.
     default: "false"
   comment:
-    description: Post the proof as one comment on the pull request, and update it on each run. Needs pull-requests write permission.
+    description: Post the proof as one comment on the pull request, and update it on each run. Needs pull-requests write permission. Set false when a seal job posts it.
     default: "true"
   upload:
     description: Keep the proofs and their screenshots as a workflow artifact.
@@ -41,7 +41,7 @@ inputs:
     default: proof
   version:
     description: The @mlola/browser-cli version.
-    default: "0.18.0"
+    default: "0.19.0"
   github-token:
     description: The token used to post the comment.
     default: ${{ github.token }}

@@ -1,0 +1,102 @@
+name: Mlola Prove (seal)
+description: In a job that runs none of the change's code, check the proofs the prove job made, sign them, and gate on them.
+author: Mlola
+branding:
+  icon: lock
+  color: green
+
+# Why a second job: the job that runs the change runs its code and its
+# dependencies, so a signing key there can be read and used to sign anything.
+# This job only downloads the proofs, reads the contracts and runs the pinned
+# CLI (https://github.com/mlolahq/browser-runtime/blob/main/docs/trust-model.md).
+
+inputs:
+  contracts:
+    description: The contracts that were proved (the same glob as the prove job). Each must have a proof.
+    default: contracts/*.json
+  artifact-name:
+    description: The artifact the prove job uploaded.
+    default: mlola-proof
+  out:
+    description: Where the proofs are put, and where the prove job wrote them (its `out`).
+    default: proof
+  commit:
+    description: The commit the proofs must be about. Default, the commit this run checked.
+    default: ${{ github.sha }}
+  require-auto-merge:
+    description: Fail unless every contract is proven with nothing left for a person.
+    default: "false"
+  checkout:
+    description: Check out the repository for its contracts (files are read, nothing is run). Set false when the job already did.
+    default: "true"
+  comment:
+    description: Post the proofs, as checked here, on the pull request.
+    default: "true"
+  version:
+    description: The @mlola/browser-cli version, 0.19.0 or later.
+    default: "0.19.0"
+  github-token:
+    description: The token used to post the comment.
+    default: ${{ github.token }}
+
+outputs:
+  verdict:
+    description: proven, not-proven or not-proven-yet, the worst over all contracts, from the proofs as checked here.
+    value: ${{ steps.seal.outputs.verdict }}
+  auto-merge:
+    description: true when every contract is proven with nothing left for a person.
+    value: ${{ steps.seal.outputs.auto-merge }}
+  signed:
+    description: true when every proof was signed here (false without a key, as on pull requests from forks).
+    value: ${{ steps.seal.outputs.signed }}
+  proof-dir:
+    description: Where the sealed proofs are.
+    value: ${{ steps.seal.outputs.proof-dir }}
+
+runs:
+  using: composite
+  steps:
+    - name: Check out the contracts (read, never run)
+      if: inputs.checkout == 'true'
+      uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+
+    - name: Download the proofs
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ inputs.out }}
+
+    - name: Seal and check
+      id: seal
+      shell: bash
+      # Inputs reach the script as environment variables, never as script text.
+      env:
+        MLOLA_CONTRACTS: ${{ inputs.contracts }}
+        MLOLA_OUT: ${{ inputs.out }}
+        MLOLA_COMMIT: ${{ inputs.commit }}
+        MLOLA_REQUIRE_AUTO_MERGE: ${{ inputs.require-auto-merge }}
+        MLOLA_CLI_VERSION: ${{ inputs.version }}
+      run: bash "$GITHUB_ACTION_PATH/../seal.sh"
+
+    - name: Comment on the pull request
+      if: always() && inputs.comment == 'true' && github.event.pull_request.number
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        MLOLA_PR: ${{ github.event.pull_request.number }}
+        MLOLA_REPO: ${{ github.repository }}
+        MLOLA_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        MLOLA_COMMENT_FILE: ${{ steps.seal.outputs.comment-file }}
+        MLOLA_ARTIFACT: ${{ inputs.artifact-name }}
+      run: bash "$GITHUB_ACTION_PATH/../comment.sh"
+
+    - name: Keep the sealed proofs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ inputs.out }}
+        overwrite: true
+        if-no-files-found: ignore
