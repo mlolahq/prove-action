@@ -7,14 +7,18 @@ set -uo pipefail
 
 contracts=${MLOLA_CONTRACTS:-contracts/*.json}
 out=${MLOLA_OUT:-proof}
-version=${MLOLA_CLI_VERSION:-0.18.0}
+version=${MLOLA_CLI_VERSION:-0.19.0}
 tmp=${RUNNER_TEMP:-${TMPDIR:-/tmp}}
 comment_file="$tmp/mlola-prove-comment.md"
 : >"$comment_file"
 
 if ! [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]]; then
-  echo "::error::version must be an exact @mlola/browser-cli version, such as 0.18.0"
+  echo "::error::version must be an exact @mlola/browser-cli version, such as 0.19.0"
   exit 2
+fi
+
+if [[ -n ${MLOLA_RECEIPT_KEY:-} ]]; then
+  echo "::warning::MLOLA_RECEIPT_KEY is set in the job that runs the change, where its code and dependencies can read it. Move the key to a job that runs mlolahq/prove-action/seal (see the README, Signing), and replace it if pull requests you did not write ran with it."
 fi
 
 # One install for all contracts, away from the project's own node_modules.
