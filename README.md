@@ -111,7 +111,7 @@ is the gate.
 | `upload` | `true` | Keep the proofs as a workflow artifact. |
 | `artifact-name` | `mlola-proof` | The name of that artifact. |
 | `out` | `proof` | Where the proofs are written. |
-| `version` | `0.19.0` | The `@mlola/browser-cli` version, exact. |
+| `version` | `0.20.0` | The `@mlola/browser-cli` version, exact. |
 | `github-token` | the job's token | The token used to post the comment. |
 
 ## Outputs
@@ -138,7 +138,7 @@ app was not reachable, or a test was skipped.
 | `require-auto-merge` | `false` | Fail unless every contract is proven with nothing left for a person. |
 | `checkout` | `true` | Check out the repository for its contracts. Files are read; nothing is run. |
 | `comment` | `true` | Post the proofs on the pull request. |
-| `version` | `0.19.0` | The `@mlola/browser-cli` version, exact (0.19.0 or later). |
+| `version` | `0.20.0` | The `@mlola/browser-cli` version, exact: the prove job's or later. A 0.19 seal cannot read the `mlola.proof/3` proofs 0.20 makes. |
 | `github-token` | the job's token | The token used to post the comment. |
 
 | Output | Meaning |

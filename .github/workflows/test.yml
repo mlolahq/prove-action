@@ -54,7 +54,7 @@ jobs:
         with: { node-version: 22 }
       - name: A key for this run only
         run: |
-          MLOLA_HOME="$RUNNER_TEMP/signer" npx -y -p @mlola/browser-cli@0.19.0 mlola receipt keygen
+          MLOLA_HOME="$RUNNER_TEMP/signer" npx -y -p @mlola/browser-cli@0.20.0 mlola receipt keygen
           echo "MLOLA_RECEIPT_KEY=$RUNNER_TEMP/signer/keys/receipt-ed25519.pem" >> "$GITHUB_ENV"
       - name: Seal with this action
         id: seal
@@ -77,4 +77,4 @@ jobs:
         env: { PROOF_DIR: "${{ steps.seal.outputs.proof-dir }}" }
         run: |
           sed -i 's/"verdict": "failed"/"verdict": "verified"/; s/"reason": "/"reason": "edited /' "$PROOF_DIR/CR-1/proof.json"
-          if npx -y -p @mlola/browser-cli@0.19.0 mlola receipt check "$PROOF_DIR/CR-1/proof.json"; then exit 1; fi
+          if npx -y -p @mlola/browser-cli@0.20.0 mlola receipt check "$PROOF_DIR/CR-1/proof.json"; then exit 1; fi
